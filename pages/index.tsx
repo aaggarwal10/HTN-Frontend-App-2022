@@ -1,8 +1,11 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import Head from 'next/head';
+import Image from 'next/image';
+import styles from '../styles/Home.module.css';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { GET_ALL_EVENTS_QUERY } from '../lib/queries';
 
-export default function Home() {
+export default function Home({ events }) {
+  console.log(events);
   return (
     <div className={styles.container}>
       <Head>
@@ -66,4 +69,19 @@ export default function Home() {
       </footer>
     </div>
   )
+}
+
+export async function getStaticProps() {
+  const client = new ApolloClient({
+    uri: 'https://api.hackthenorth.com/v3/graphql',
+    cache: new InMemoryCache
+  });
+  const { data } = await client.query({
+    query: GET_ALL_EVENTS_QUERY
+  });
+  return {
+    props: {
+      events: data.sampleEvents
+    }
+  };
 }
