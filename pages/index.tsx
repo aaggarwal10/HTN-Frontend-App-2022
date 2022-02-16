@@ -68,7 +68,7 @@ export default function Home(props: { events: TEvent[] }) {
       <Flex marginY={3}>
         <Box p='2'>
           <HStack ml={{ base: '0', md: '1', lg: '30' }} >
-            <Image src={useColorModeValue('https://www.logolynx.com/images/logolynx/e2/e2c8de4589a1b821c2ea8a0b52423c8d.png', 'https://upload.wikimedia.org/wikipedia/commons/f/f4/White_Globe_Icon.png')} alt='globe icon' borderRadius='full' boxSize={'80px'} />
+            <Image src={useColorModeValue('/static/darkGlobeIcon.png', '/static/lightGlobeIcon.png')} alt='globe icon' borderRadius='full' boxSize={'80px'} />
             <Heading color={useColorModeValue('orange.600', 'white')} fontSize={{ base: 'xl', md: '3xl', lg: '5xl' }}>Global Hackathon Inc.</Heading>
           </HStack>
         </Box>
