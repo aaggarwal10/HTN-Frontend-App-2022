@@ -8,7 +8,6 @@ import {
     Button,
     Text,
     Box,
-    useDisclosure,
     HStack,
     SimpleGrid,
     Image,
@@ -20,8 +19,7 @@ import {
     ModalCloseButton,
     useColorModeValue,
 } from '@chakra-ui/react'; // Chakra UI
-import Link from 'next/link'; // Link
-import { ReactNode, useEffect, useState } from 'react'; // React JSX Type
+import { useState } from 'react'; // React JSX Type
 import { TEvent, TPermission, TEventType } from '../lib/types';
 import { formatDateTimeVerbose, formatTimeVerbose } from '../lib/utils/format';
 import Carousel from 'react-multi-carousel';
@@ -30,24 +28,26 @@ type EventDisplayModal = {
     readonly event: TEvent;
     readonly allEvents: Map<number, TEvent>;
     readonly permission: TPermission;
-    readonly buttonHover: boolean;
     readonly urlLink: string;
-    readonly children: ReactNode;
+    readonly isOpen: boolean;
+    readonly onClose: () => void;
+
 };
 /**
  * Modal for Cancel Create Request
  * @param type Whether modal is being used for replacement or renewal form
  * @param children ReactNode children elements in component
  */
-export default function EventDisplayModal({ event, permission, buttonHover, urlLink, children, allEvents }: EventDisplayModal) {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+export default function EventDisplayModal({ event, permission, urlLink, isOpen, onClose, allEvents }: EventDisplayModal) {
+    const [displayEvent, setDisplayEvent] = useState<TEvent>(event);
+    const [displayLink, setDisplayLink] = useState(urlLink);
+    const [relatedEvents, setRelatedEvents] = useState<number[]>([]);
+    // useEffect(() => updateRelatedEvents(), [displayEvent]);
     const verboseTypes = new Map<TEventType, string>([
         ['workshop', 'Workshop'],
         ['activity', 'Activity'],
         ['tech_talk', 'Tech Talk']
     ]);
-    const [displayEvent, setDisplayEvent] = useState<TEvent>(event);
-    const [displayLink, setDisplayLink] = useState(urlLink);
     const responsive = {
         superLargeDesktop: {
             // the naming can be any, depends on you.
@@ -67,13 +67,8 @@ export default function EventDisplayModal({ event, permission, buttonHover, urlL
             items: 1
         }
     };
-    const [relatedEvents, setRelatedEvents] = useState<number[]>([]);
-    useEffect(() => {
-        updateRelatedEvents();
-    }, [displayEvent])
-
     function updateRelatedEvents() {
-        const relEvents = [];
+        let relEvents = [];
         displayEvent.related_events.forEach((relatedId: number) => {
             if (permission !== 'public' || allEvents.get(relatedId).public_url !== '')
                 relEvents.push(relatedId)
@@ -82,8 +77,7 @@ export default function EventDisplayModal({ event, permission, buttonHover, urlL
     }
     return (
         <>
-            <Box onClick={() => { if (!buttonHover) { onOpen(); setDisplayEvent(event); setDisplayLink(urlLink); updateRelatedEvents(); } }}>{children}</Box>
-            <Modal isOpen={isOpen} onClose={onClose} isCentered size='full'>
+            <Modal isOpen={isOpen} onClose={() => { setDisplayEvent(event); setDisplayLink(urlLink); onClose(); }} isCentered size='full'>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader marginX={{ base: 5, md: 20, lg: 40 }}>
@@ -100,8 +94,8 @@ export default function EventDisplayModal({ event, permission, buttonHover, urlL
                                 <Text textAlign={'center'} marginTop={-4} marginBottom={7} fontWeight={'bold'} fontSize={'3xl'}> 🤝 Meet The Speakers 🤝 </Text>
                                 <VStack justifyItems={'center'}>
                                     <SimpleGrid spacing='40px'>
-                                        {displayEvent.speakers.map((speaker) =>
-                                            <Box>
+                                        {displayEvent.speakers.map((speaker, index) =>
+                                            <Box key={index}>
                                                 <Center>
                                                     <VStack>
                                                         <Image
@@ -121,11 +115,11 @@ export default function EventDisplayModal({ event, permission, buttonHover, urlL
                                 </VStack>
                             </>
                         }
-                        {relatedEvents.length > 0 && (
+                        {displayEvent.related_events.filter(relatedId => permission !== 'public' || allEvents.get(relatedId).public_url !== '').length > 0 && (
                             <>
                                 <Text textAlign={'center'} marginTop={8} fontWeight={'bold'} fontSize={'3xl'}> 📆 Related Events 📆 </Text>
                                 <Carousel responsive={responsive}>
-                                    {relatedEvents.map((relatedId: number) => {
+                                    {displayEvent.related_events.filter(relatedId => permission !== 'public' || allEvents.get(relatedId).public_url !== '').map((relatedId: number) => {
                                         const relatedEvent = allEvents.get(relatedId);
                                         const shadowCol = useColorModeValue('rgba(0,0,0,0.23)', 'rgba(255,255,255,0.23)');
                                         const newLink = permission == 'public' ? relatedEvent.public_url : relatedEvent.private_url;
@@ -172,6 +166,7 @@ export default function EventDisplayModal({ event, permission, buttonHover, urlL
                                                         onClick={() => {
                                                             setDisplayEvent(relatedEvent);
                                                             setDisplayLink(newLink);
+                                                            updateRelatedEvents();
                                                         }}
                                                     >
                                                         Go To Event

@@ -14,8 +14,9 @@ type EventListItemProps = {
 };
 
 export default function EventListItem(props: EventListItemProps) {
-    const { eventEntry, allEvents, permission, attending, onAttendClicked } = props;
     const [buttonHoverState, setButtonHoverState] = useState<boolean>(false);
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const { eventEntry, allEvents, permission, attending, onAttendClicked } = props;
     const urlLink = permission === 'public' ? eventEntry.public_url : eventEntry.private_url;
     const startTime = new Date(eventEntry.start_time);
     const endTime = new Date(eventEntry.end_time);
@@ -32,7 +33,8 @@ export default function EventListItem(props: EventListItemProps) {
         borderFill = 'purple.100';
     }
     return (
-        <EventDisplayModal event={eventEntry} permission={permission} buttonHover={buttonHoverState} urlLink={urlLink} allEvents={allEvents}>
+        <>
+            <EventDisplayModal event={eventEntry} permission={permission} urlLink={urlLink} allEvents={allEvents} isOpen={modalOpen} onClose={() => setModalOpen(false)} />
             <GridItem
                 display="flex"
                 flexDirection="column"
@@ -46,7 +48,7 @@ export default function EventListItem(props: EventListItemProps) {
                     background: useColorModeValue("blue.50", "blue.900"),
                     border: useColorModeValue('1px black solid', '1px white solid')
                 }}
-                onClick={() => { if (!buttonHoverState) console.log("CLICKED") }}
+                onClick={() => { if (!buttonHoverState) setModalOpen(true) }}
             >
                 <Grid templateColumns='repeat(4, 1fr)' gap={6} w="100%" alignItems={'center'} justifyItems={'flex-end'}>
                     <Text as="h5" fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} textStyle="display-small-semibold" justifySelf={'flex-start'}>
@@ -69,6 +71,6 @@ export default function EventListItem(props: EventListItemProps) {
                     }
                 </Grid>
             </GridItem >
-        </EventDisplayModal>
+        </>
     );
 }

@@ -4,6 +4,7 @@ import { Button, Flex, Tabs, Tab, TabList, useColorMode, useColorModeValue, Spac
 import { useEffect, useState } from 'react';
 import { SimpleGrid, Box } from '@chakra-ui/react'
 import EventListItem from '../components/EventListItem';
+import LoginModal from '../components/LoginModal';
 import { LockIcon, MoonIcon, SunIcon, UnlockIcon, SearchIcon } from '@chakra-ui/icons';
 import { TEvent, TFilterType } from '../lib/types';
 export default function Home(props: { events: TEvent[] }) {
@@ -24,7 +25,6 @@ export default function Home(props: { events: TEvent[] }) {
       return false;
     if (event.public_url === '' && loggedIn === false)
       return false;
-    console.log(attendingEvents);
     if (currentFilter == TFilterType.attending && attendingEvents.includes(event.id))
       return loggedIn;
     return currentFilter === TFilterType.all_events || event.event_type === TFilterType[currentFilter];
@@ -39,6 +39,8 @@ export default function Home(props: { events: TEvent[] }) {
   useEffect(() => {
     if (currentFilter === null && localStorage.getItem('activeTab') !== null) {
       setCurrentFilter(JSON.parse(localStorage.getItem('activeTab')));
+    } else if (currentFilter === null) {
+      setCurrentFilter(TFilterType.all_events);
     } else {
       localStorage.setItem('activeTab', JSON.stringify(currentFilter));
     }
@@ -71,15 +73,16 @@ export default function Home(props: { events: TEvent[] }) {
           </HStack>
         </Box>
         <Spacer />
-        <Box>
-          <Button
-            leftIcon={loggedIn ? <UnlockIcon /> : <LockIcon />}
-            colorScheme='orange'
-            mr='4'
-            onClick={() => setLogInStatus(!loggedIn)}
-          >
-            {loggedIn ? 'Log out' : 'Log in'}
-          </Button>
+        <HStack marginTop={-19} marginRight={5}>
+          <LoginModal logInStatus={loggedIn} setLogInStatus={setLogInStatus}>
+            <Button
+              leftIcon={loggedIn ? <UnlockIcon /> : <LockIcon />}
+              colorScheme='orange'
+              mr='1'
+            >
+              {loggedIn ? 'Log out' : 'Log in'}
+            </Button>
+          </LoginModal>
           <IconButton
             aria-label='Change color mode'
             size='md'
@@ -89,9 +92,9 @@ export default function Home(props: { events: TEvent[] }) {
             icon={useColorModeValue(<MoonIcon />, <SunIcon />)}
             onClick={toggleColorMode}
           />
-        </Box>
+        </HStack>
       </Flex>
-      <InputGroup size='sm' w='24%' color='white.700' marginLeft={{ base: 1, md: 10, lg: 20 }} marginY={2} border={useColorModeValue('1px black solid', '1px white solid')}>
+      <InputGroup size='sm' w='24%' color='white.700' ml={{ base: '1', md: '2', lg: '31' }} marginY={2} border={useColorModeValue('1px black solid', '1px white solid')}>
         <InputLeftAddon children={<SearchIcon />} />
         <Input
           value={searchString}
@@ -133,7 +136,6 @@ export async function getStaticProps() {
     query: GET_ALL_EVENTS_QUERY
   });
   const sorted = data.sampleEvents.slice().sort((a, b) => a.start_time - b.start_time)
-  console.log(sorted);
   return {
     props: {
       events: sorted
