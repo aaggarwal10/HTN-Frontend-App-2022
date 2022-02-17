@@ -185,7 +185,7 @@ export default function EventDisplayModal({ event, permission, urlLink, isOpen, 
                             colorScheme={'orange'}
                             variant={'outline'}
                             marginRight={3}
-                            onClick={onClose}
+                            onClick={() => { setDisplayEvent(event); setDisplayLink(urlLink); onClose(); }}
                         >
                             <Text textStyle="button-semibold">Close</Text>
                         </Button>
