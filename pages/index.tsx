@@ -7,6 +7,8 @@ import EventListItem from '../components/EventListItem';
 import LoginModal from '../components/LoginModal';
 import { LockIcon, MoonIcon, SunIcon, UnlockIcon, SearchIcon } from '@chakra-ui/icons';
 import { TEvent, TFilterType } from '../lib/types';
+import Head from "next/head";
+
 export default function Home(props: { events: TEvent[] }) {
   const { events } = props;
   const { colorMode, toggleColorMode } = useColorMode();
@@ -65,6 +67,10 @@ export default function Home(props: { events: TEvent[] }) {
   }, [loggedIn])
   return (
     <>
+      <Head>
+        <title>Global Hackathon Events</title>
+        <meta name="description" content="Events for the Global Hackathon Inc.'s online hackathon." />
+      </Head>
       <Flex marginY={3}>
         <Box p='2'>
           <HStack ml={{ base: '0', md: '1', lg: '30' }} >
